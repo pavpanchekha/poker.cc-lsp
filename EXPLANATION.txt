@@ -1,0 +1,74 @@
+Explanation of Code
+===================
+
+I highly suggest looking at the code first. Come on, Dr. Nevard, don't waste
+the element of horrible surprise I spent so much time on!
+
+Summary
+-------
+
+You know how much I've been complaining that I hate C++?
+
+Well, I remember something I once told Watson, as we discussed browser
+rendering engines: "If it's so terrible, why don't you do something about it?"
+Well, "practice what you preach", right?
+
+Overview
+--------
+
+The Lisp implemented is a very rudimentary and stupid Lisp. Some aspects,
+like the lack of any garbage collection, are utterly horrific. On the other
+hand, it does fully support the most important parts of Lisp: linked lists,
+closures, and even macros (in a way) are available. The last is not used at
+all in the code, because ideally I would write an actual, decent macro system,
+but that would require a few new features and honestly, it's getting toward
+deadline.
+
+Supported data types are integers, symbols, closures, and lists. No others.
+Hands are represented, thus, as a list of five integers (from 0 to 51),
+encoded just as they are in the main ``Card`` class. For convenience, the
+functions ``(value card)`` and ``(suit card)`` can be used to access those
+properties.
+
+Organization
+------------
+
+The interpreter itself is organized several files:
+
+``l_c.h`` and ``l_c.cc``
+    These are the files of common classes and functionality, such as values,
+    cons cells, and the base class for all closures.
+
+``l_i.h`` and ``l_i.cc``
+    These files implement the `inheriting dictionary`, which is what allows
+    for proper closure support. The C++ ``map`` is used as the base
+    dictionary, but multiple workarounds are needed to fix up its deficiencies.
+
+``l_p.cc``
+    The parser is located here. It reads from an ``istream`` and produces
+    ``cons*``\ s.
+
+``l_e.cc``
+    The main evaluator lives here, taking in some representation of Lisp code
+    and returning a ``value``.
+
+``l_l.cc``
+    The ugliest code, and the largest file, is this, which implements the
+    standard library. The lack of "rest arguments" (that is, variary functions)
+    means that many functions that honestly should have been written in
+    Lisp were instead written here.
+
+``shell.cc``
+    This implements a basic shell to play with the Lisp. ``shell`` starts a
+    read-eval-print loop and ``shell file`` first loads ``file`` and then
+    starts the loop.
+
+``LICENSE.txt``
+    This cleverly-disguised file actually contains my Lisp's standard library.
+    That it was easier to write these in Lisp than in C++ is mildly telling,
+    more about me than about C++.
+
+``algorithm-overview.txt``
+    This file is actually loaded and executed as part of the discarding of
+    cards. Yes, executed. I'm evil, I know.
+

@@ -1,0 +1,55 @@
+; You asked for it.
+
+(set! value (fn (card)
+  (+ (/ card 4) 2)))
+
+(set! suit (fn (card)
+  (% card 4)))
+
+(set! not-in-pairs (fn (hand)
+  (reduce append '()
+          (filter (fn (x) (= (len x) 1))
+                  (group-by value hand)))))
+
+(set! go-for-flush (fn (hand) ; Only go for flush if 4 in same suit
+  (set! flush (max-by len (group-by suit (sort-by suit hand))))
+
+  (if (>= (len flush) 4)
+    (filter (fn (x) (!= (suit x) (suit (car flush)))) hand)
+    0)))
+
+(set! go-for-straight (fn (hand)
+  (set! aux (fn (hand straight)
+    (if (not hand)
+      straight
+      (if (= (value (car hand)) (value (car straight)))
+        (aux (cdr hand) straight)
+        (if (= (value (car hand)) (+ 1 (value (car straight))))
+          (aux (cdr hand) (cons (car hand) straight))
+          straight)))))
+  
+  (set! straight (aux (cdr hand) (list (car hand))))
+  
+  (if (>= (len straight) 4)
+    (filter (fn (x) (not (in x straight))) hand)
+    0)))
+
+(set! discard-which (fn (hand n-players)
+  (set! hand (sort-by (fn (x) (- 0 x)) hand)) ; Sort descending
+  (set! possible-flush (go-for-flush hand))
+
+  (if (not (atom? possible-flush))
+    possible-flush
+    (block
+        (set! possible-straight (go-for-straight hand))
+        (if (not (atom? possible-straight))
+          possible-straight
+          (block
+            (set! possible-nothing (reverse (not-in-pairs hand)))
+            (if (= (len possible-nothing) 1)
+              (if (< (value (car possible-nothing)) 8)
+                possible-nothing
+                '())
+              possible-nothing)))))))
+
+

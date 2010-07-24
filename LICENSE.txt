@@ -1,0 +1,110 @@
+
+(set! I (fn (x) x))
+
+(set! range (fn (n)
+  (if (not n)
+    '()
+    (cons (- n 1) (range (- n 1))))))
+
+(set! reverse (fn (l)
+  (set! reverse-aux (fn (a b)
+    (if (not a)
+      b
+      (reverse-aux (cdr a) (cons (car a) b)))))
+  (reverse-aux l '())))
+
+(set! append (fn (a b)
+  (if (not a)
+    b
+    (cons (car a) (append (cdr a) b)))))
+
+(set! len (fn (l)
+  (if (not l)
+    0
+    (+ 1 (len (cdr l))))))
+
+(set! take (fn (n l)
+  (if (not n)
+    '()
+    (if (not l)
+      l
+      (cons (car l) (take (- n 1) (cdr l)))))))
+
+; NOTE: Only works for sorted list
+(set! uniq (fn (l)
+  (set! uniq-aux (fn (a b)
+    (if (not a)
+      b
+      (if (= (car a) (car b))
+        (uniq-aux (cdr a) b)
+        (uniq-aux (cdr a) (cons (car a) b))))))
+  (reverse (uniq-aux (cdr l) (list (car l))))))
+
+(set! group-by (fn (f l)
+  (set! aux (fn (a b)
+    (if (not a)
+      b
+      (if (= (f (car a)) (f (car (car b))))
+        (aux (cdr a) (cons (cons (car a) (car b)) (cdr b)))
+        (aux (cdr a) (cons (list (car a)) b))))))
+  (reverse (aux (cdr l) (list (list (car l)))))))
+
+(set! in (fn (el l)
+  (if (not l)
+    0
+    (if (= el (car l))
+      1
+      (in el (cdr l))))))
+
+(set! map (fn (f l)
+  (if (not l)
+    l
+    (cons (f (car l)) (map f (cdr l))))))
+
+(set! filter (fn (f l)
+  (if (not l)
+    l
+    (if (f (car l))
+      (cons (car l) (filter f (cdr l)))
+      (filter f (cdr l))))))
+
+(set! reduce (fn (f init l)
+  (if (= (len l) 0)
+    init
+    (f (car l) (reduce f init (cdr l))))))
+
+(set! max-by (fn (f l)
+  (set! max-by-aux (fn (f l cmax cmaxval)
+    (if (not l)
+      cmax
+      (block
+        (set! f-cur (f (car l)))
+        (if (> f-cur cmaxval)
+          (max-by-aux f (cdr l) (car l) f-cur)
+          (max-by-aux f (cdr l) cmax cmaxval))))))
+  (max-by-aux f (cdr l) (car l) (f (car l)))))
+
+(set! sort-by (fn (key-fn l) ; A good old quick-sort
+  (set! partition (fn (key-fn l pivot)
+    (set! partition-aux (fn (key-fn l pivot left right)
+      (if (not l)
+        (list left right)
+        (if (< (key-fn (car l)) (key-fn pivot))
+          (partition-aux key-fn (cdr l) pivot (cons (car l) left) right)
+          (partition-aux key-fn (cdr l) pivot left (cons (car l) right))))))
+    (partition-aux key-fn l pivot '() '())))
+
+  (set! aux (fn (key-fn l pivot)
+    (if (not l)
+      (list pivot)
+      (block
+        (set! partitioned (partition key-fn l pivot))
+
+        (set! left-sorted  (sort-by key-fn (car partitioned)))
+        (set! right-sorted (sort-by key-fn (car (cdr partitioned))))
+
+        (append left-sorted (cons pivot right-sorted))))))
+
+  (if (not l)
+    l
+    (aux key-fn (cdr l) (car l)))))
